@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuitClock — 지금 이 순간 얼마 벌었어?</title>
+  <meta name="description" content="출근시간이랑 월급 입력하면 지금 이 순간 얼마 벌었는지 알려줌. 정년까지 몇 초 남았는지도." />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- SETUP SCREEN -->
+    <section id="setup-screen" class="screen active">
+      <div class="setup-inner">
+        <header class="setup-header">
+          <div class="logo">QUIT<span>CLOCK</span></div>
+          <p class="tagline">지금 이 순간 얼마 벌었어?</p>
+        </header>
+
+        <form id="setup-form" class="setup-form" novalidate>
+          <div class="form-group">
+            <label for="birth">생년월일</label>
+            <input type="date" id="birth" required />
+          </div>
+          <div class="form-group">
+            <label for="join">입사일</label>
+            <input type="date" id="join" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="start-time">출근 시간</label>
+              <input type="time" id="start-time" value="09:00" required />
+            </div>
+            <div class="form-group">
+              <label for="salary">월 세전 급여 (원)</label>
+              <input type="number" id="salary" placeholder="3,000,000" required />
+            </div>
+          </div>
+          <button type="submit" class="btn-start">
+            <span>시작하기</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </form>
+
+        <p class="privacy-note">입력한 정보는 서버에 저장되지 않아. 브라우저에서만 동작함.</p>
+      </div>
+    </section>
+
+    <!-- DASHBOARD SCREEN -->
+    <section id="dashboard-screen" class="screen">
+      <div class="dashboard-inner">
+
+        <header class="dash-header">
+          <div class="logo small">QUIT<span>CLOCK</span></div>
+          <button id="reset-btn" class="btn-reset">다시 입력</button>
+        </header>
+
+        <!-- EARNED -->
+        <div class="earned-block">
+          <div class="earned-label">지금 이 순간 벌어들인 금액</div>
+          <div class="earned-amount" id="earned-amount">₩0</div>
+          <div class="earned-sub" id="earned-sub">초당 — 원</div>
+        </div>
+
+        <!-- PROGRESS -->
+        <div class="progress-block">
+          <div class="progress-meta">
+            <span id="prog-label">직장생활 진행률</span>
+            <span id="prog-pct" class="prog-pct">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="prog-fill"></div>
+          </div>
+          <div class="progress-dates">
+            <span id="prog-join">입사일</span>
+            <span id="prog-retire">정년</span>
+          </div>
+        </div>
+
+        <!-- RETIRE COUNTDOWN -->
+        <div class="retire-section">
+          <div class="retire-title">정년까지 남은 시간 <span class="retire-badge">만 60세 기준</span></div>
+
+          <div class="retire-grid">
+            <div class="retire-card big">
+              <div class="rc-value" id="ret-ym">—</div>
+              <div class="rc-unit">년 월</div>
+            </div>
+            <div class="retire-card big">
+              <div class="rc-value" id="ret-days">—</div>
+              <div class="rc-unit">일</div>
+            </div>
+            <div class="retire-card">
+              <div class="rc-value" id="ret-hours">—</div>
+              <div class="rc-unit">시간</div>
+            </div>
+            <div class="retire-card">
+              <div class="rc-value" id="ret-mins">—</div>
+              <div class="rc-unit">분</div>
+            </div>
+            <div class="retire-card accent">
+              <div class="rc-value" id="ret-secs">—</div>
+              <div class="rc-unit">초</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMMENT -->
+        <div class="comment-block" id="comment-block">...</div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
