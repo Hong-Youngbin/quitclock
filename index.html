@@ -46,7 +46,7 @@
           </button>
         </form>
 
-        <p class="privacy-note">입력한 정보는 서버에 저장되지 않아. 브라우저에서만 동작함.</p>
+        <p class="privacy-note">입력한 정보는 브라우저에 저장돼. 서버엔 안 가.</p>
       </div>
     </section>
 
@@ -106,6 +106,31 @@
               <div class="rc-value" id="ret-secs">—</div>
               <div class="rc-unit">초</div>
             </div>
+          </div>
+        </div>
+
+        <!-- CURRENCY -->
+        <div class="currency-section">
+          <div class="retire-title">환율로 변환 <span class="retire-badge" id="rate-date">환율 불러오는 중...</span></div>
+          <div class="currency-row">
+            <select id="currency-select" class="currency-select">
+              <option value="">통화 선택</option>
+            </select>
+            <div class="currency-result" id="currency-result">—</div>
+          </div>
+        </div>
+
+        <!-- CURRENCY -->
+        <div class="currency-section">
+          <div class="currency-header">
+            <div class="retire-title">환율 변환 <span class="retire-badge" id="rate-date">불러오는 중...</span></div>
+            <select id="currency-select">
+              <option value="">통화 선택</option>
+            </select>
+          </div>
+          <div class="currency-result-wrap">
+            <div class="currency-result" id="currency-result">—</div>
+            <div class="currency-sub">지금까지 번 금액 기준</div>
           </div>
         </div>
 

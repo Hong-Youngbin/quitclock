@@ -12,6 +12,30 @@ const state = {
   perSecond: 0,
   retireDate: null,
   joinDate: null,
+  rates: {},
+  currency: '',
+};
+
+// ===========================
+// STORAGE MODULE
+// ===========================
+
+const Storage = {
+  KEY: 'quitclock_settings',
+
+  save(data) {
+    try { localStorage.setItem(this.KEY, JSON.stringify(data)); }
+    catch (e) { console.warn('localStorage 저장 실패:', e); }
+  },
+
+  load() {
+    try {
+      const raw = localStorage.getItem(this.KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  },
+
+  clear() { localStorage.removeItem(this.KEY); },
 };
 
 // ===========================
@@ -19,60 +43,104 @@ const state = {
 // ===========================
 
 const Calc = {
-  /** 초당 급여 (월급 기준, 월 22일 8시간 근무 가정) */
   perSecond(monthlySalary) {
-    const WORK_DAYS = 22;
-    const WORK_HOURS = 8;
-    return monthlySalary / (WORK_DAYS * WORK_HOURS * 3600);
+    return monthlySalary / (22 * 8 * 3600);
   },
 
-  /** 지금까지 번 금액 */
   earned(startTs, perSecond) {
-    const elapsed = Math.max(0, (Date.now() - startTs) / 1000);
-    return elapsed * perSecond;
+    return Math.max(0, (Date.now() - startTs) / 1000) * perSecond;
   },
 
-  /** 정년 날짜 계산 (만 retireAge세 생일) */
   retireDate(birthDate, retireAge = 60) {
     const d = new Date(birthDate);
     d.setFullYear(d.getFullYear() + retireAge);
     return d;
   },
 
-  /** 남은 시간 분해 */
   timeLeft(retireDate) {
     const msLeft = retireDate - Date.now();
     if (msLeft <= 0) return null;
-
     const totalSec = Math.floor(msLeft / 1000);
     const totalMins = Math.floor(totalSec / 60);
     const totalHours = Math.floor(totalMins / 60);
     const totalDays = Math.floor(totalHours / 24);
-
-    // 년/월 계산
     const now = new Date();
     let years = retireDate.getFullYear() - now.getFullYear();
     let months = retireDate.getMonth() - now.getMonth();
     if (months < 0) { years--; months += 12; }
-
-    return {
-      years,
-      months,
-      totalDays,
-      totalHours,
-      totalMins,
-      totalSec,
-      secs: totalSec % 60,
-      mins: totalMins % 60,
-      hours: totalHours % 24,
-    };
+    return { years, months, totalDays, totalHours, totalMins, totalSec };
   },
 
-  /** 직장생활 진행률 (0~100) */
   careerProgress(joinDate, retireDate) {
-    const total = retireDate - joinDate;
-    const elapsed = Date.now() - joinDate;
-    return Math.min(100, Math.max(0, (elapsed / total) * 100));
+    return Math.min(100, Math.max(0, (Date.now() - joinDate) / (retireDate - joinDate) * 100));
+  },
+
+  convertKRW(amountKRW, targetCurrency, rates) {
+    if (!rates || !rates[targetCurrency] || !rates['KRW']) return null;
+    return (amountKRW / rates['KRW']) * rates[targetCurrency];
+  },
+};
+
+// ===========================
+// CURRENCY MODULE
+// ===========================
+
+const CURRENCY_LABELS = {
+  USD: '미국 달러 (USD)',
+  JPY: '일본 엔 (JPY)',
+  EUR: '유로 (EUR)',
+  GBP: '영국 파운드 (GBP)',
+  CNY: '중국 위안 (CNY)',
+  HKD: '홍콩 달러 (HKD)',
+  AUD: '호주 달러 (AUD)',
+  CAD: '캐나다 달러 (CAD)',
+  CHF: '스위스 프랑 (CHF)',
+  SGD: '싱가포르 달러 (SGD)',
+  THB: '태국 바트 (THB)',
+  VND: '베트남 동 (VND)',
+  INR: '인도 루피 (INR)',
+  MXN: '멕시코 페소 (MXN)',
+  BRL: '브라질 헤알 (BRL)',
+};
+
+const CURRENCY_SYMBOLS = {
+  USD: '$', JPY: '¥', EUR: '€', GBP: '£', CNY: '¥',
+  HKD: 'HK$', AUD: 'A$', CAD: 'C$', CHF: 'Fr',
+  SGD: 'S$', THB: '฿', VND: '₫', INR: '₹', MXN: '$', BRL: 'R$',
+};
+
+const Currency = {
+  async fetchRates() {
+    try {
+      const res = await fetch('https://api.frankfurter.app/latest?from=EUR');
+      if (!res.ok) throw new Error('오류');
+      const data = await res.json();
+      return { rates: data.rates, date: data.date };
+    } catch (e) {
+      console.warn('환율 불러오기 실패:', e);
+      return null;
+    }
+  },
+
+  populateSelect(rates) {
+    const sel = document.getElementById('currency-select');
+    sel.innerHTML = '<option value="">통화 선택</option>';
+    Object.keys(CURRENCY_LABELS).forEach(code => {
+      if (!rates[code]) return;
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = CURRENCY_LABELS[code];
+      sel.appendChild(opt);
+    });
+    if (state.currency && rates[state.currency]) sel.value = state.currency;
+  },
+
+  format(amount, currency) {
+    const sym = CURRENCY_SYMBOLS[currency] || currency + ' ';
+    if (currency === 'JPY' || currency === 'VND') {
+      return `${sym}${Math.floor(amount).toLocaleString()}`;
+    }
+    return `${sym}${amount.toFixed(2)}`;
   },
 };
 
@@ -81,7 +149,7 @@ const Calc = {
 // ===========================
 
 const UI = {
-  $ : (id) => document.getElementById(id),
+  $(id) { return document.getElementById(id); },
 
   showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -94,7 +162,7 @@ const UI = {
   },
 
   setProgress(pct, joinDate, retireDate) {
-    const fmt = (d) => d.toLocaleDateString('ko-KR', { year: '2-digit', month: 'short', day: 'numeric' });
+    const fmt = d => d.toLocaleDateString('ko-KR', { year: '2-digit', month: 'short', day: 'numeric' });
     this.$('prog-fill').style.width = pct.toFixed(2) + '%';
     this.$('prog-pct').textContent = pct.toFixed(1) + '%';
     this.$('prog-join').textContent = fmt(joinDate);
@@ -104,10 +172,7 @@ const UI = {
   setRetire(t) {
     if (!t) {
       this.$('ret-ym').textContent = '정년 도달';
-      this.$('ret-days').textContent = '—';
-      this.$('ret-hours').textContent = '—';
-      this.$('ret-mins').textContent = '—';
-      this.$('ret-secs').textContent = '—';
+      ['ret-days','ret-hours','ret-mins','ret-secs'].forEach(id => this.$(id).textContent = '—');
       return;
     }
     this.$('ret-ym').textContent = `${t.years}년 ${t.months}개월`;
@@ -117,11 +182,15 @@ const UI = {
     this.$('ret-secs').textContent = t.totalSec.toLocaleString();
   },
 
+  setCurrency(earned) {
+    const el = this.$('currency-result');
+    if (!state.currency || !state.rates[state.currency]) { el.textContent = '—'; return; }
+    const converted = Calc.convertKRW(earned, state.currency, state.rates);
+    el.textContent = converted !== null ? Currency.format(converted, state.currency) : '—';
+  },
+
   setComment(earned, timeLeft) {
-    if (!timeLeft) {
-      this.$('comment-block').textContent = '수고했어. 이제 진짜 자유다.';
-      return;
-    }
+    if (!timeLeft) { this.$('comment-block').textContent = '수고했어. 이제 진짜 자유다.'; return; }
     const pool = [
       `지금 이 순간에도 ${timeLeft.totalSec.toLocaleString()}초가 흘러가는 중`,
       `정년까지 ${timeLeft.totalMins.toLocaleString()}분 남았어. 아직 멀었다`,
@@ -130,8 +199,14 @@ const UI = {
       `커피 한 잔 마시는 사이에도 시계는 돌아가고 있음`,
       `${timeLeft.totalDays.toLocaleString()}일 뒤면 다 끝나`,
     ];
-    const idx = Math.floor(Date.now() / 12000) % pool.length;
-    this.$('comment-block').textContent = pool[idx];
+    this.$('comment-block').textContent = pool[Math.floor(Date.now() / 12000) % pool.length];
+  },
+
+  fillSetupForm(saved) {
+    if (saved.birth) document.getElementById('birth').value = saved.birth;
+    if (saved.join) document.getElementById('join').value = saved.join;
+    if (saved.startTime) document.getElementById('start-time').value = saved.startTime;
+    if (saved.salary) document.getElementById('salary').value = saved.salary;
   },
 };
 
@@ -147,6 +222,7 @@ function tick() {
   UI.setEarned(earned, state.perSecond);
   UI.setRetire(timeLeft);
   UI.setProgress(progress, state.joinDate, state.retireDate);
+  UI.setCurrency(earned);
   UI.setComment(earned, timeLeft);
 
   if (!timeLeft) clearInterval(state.ticker);
@@ -168,6 +244,8 @@ function startDashboard(e) {
     alert('모든 항목을 입력해줘');
     return;
   }
+
+  Storage.save({ birth, join, startTime, salary, currency: state.currency });
 
   const birthDate = new Date(birth);
   const joinDate = new Date(join);
@@ -194,6 +272,7 @@ function startDashboard(e) {
 function resetDashboard() {
   clearInterval(state.ticker);
   state.ticker = null;
+  Storage.clear();
   UI.showScreen('setup-screen');
 }
 
@@ -201,7 +280,32 @@ function resetDashboard() {
 // INIT
 // ===========================
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('setup-form').addEventListener('submit', startDashboard);
   document.getElementById('reset-btn').addEventListener('click', resetDashboard);
+
+  document.getElementById('currency-select').addEventListener('change', (e) => {
+    state.currency = e.target.value;
+    const saved = Storage.load() || {};
+    Storage.save({ ...saved, currency: state.currency });
+  });
+
+  // 환율 불러오기
+  const rateData = await Currency.fetchRates();
+  if (rateData) {
+    state.rates = rateData.rates;
+    Currency.populateSelect(rateData.rates);
+    const badge = document.getElementById('rate-date');
+    if (badge) badge.textContent = `${rateData.date} 기준`;
+  } else {
+    const badge = document.getElementById('rate-date');
+    if (badge) badge.textContent = '환율 불러오기 실패';
+  }
+
+  // 저장된 설정 복원
+  const saved = Storage.load();
+  if (saved) {
+    UI.fillSetupForm(saved);
+    if (saved.currency) state.currency = saved.currency;
+  }
 });

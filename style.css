@@ -400,6 +400,64 @@ input[type="number"]::-webkit-inner-spin-button {
   letter-spacing: 0.06em;
 }
 
+/* CURRENCY SECTION */
+.currency-section {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+}
+
+.currency-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.currency-header .retire-title {
+  margin-bottom: 0;
+}
+
+#currency-select {
+  background: var(--surface2);
+  border: 0.5px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  transition: border-color var(--transition);
+  color-scheme: dark;
+}
+
+#currency-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.currency-result-wrap {
+  text-align: center;
+  padding: 0.75rem 0 0.25rem;
+}
+
+.currency-result {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.currency-sub {
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
 /* COMMENT BLOCK */
 .comment-block {
   text-align: center;
@@ -409,6 +467,50 @@ input[type="number"]::-webkit-inner-spin-button {
   padding: 0.5rem 1rem;
   min-height: 2rem;
   transition: opacity 0.4s ease;
+}
+
+/* CURRENCY SECTION */
+.currency-section {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+}
+
+.currency-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.currency-select {
+  background: var(--surface2);
+  border: 0.5px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  padding: 0.6rem 0.9rem;
+  flex: 1;
+  cursor: pointer;
+  transition: border-color var(--transition);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.currency-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.currency-result {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 140px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ===========================
