@@ -3,6 +3,33 @@
    =========================== */
 
 // ===========================
+// THEME MODULE
+// ===========================
+
+const Theme = {
+  KEY: 'quitclock_theme',
+
+  get() {
+    return localStorage.getItem(this.KEY) || 'dark';
+  },
+
+  set(theme) {
+    localStorage.setItem(this.KEY, theme);
+    document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : '');
+    const icon = theme === 'light' ? '☀️' : '🌙';
+    document.querySelectorAll('.btn-theme').forEach(btn => btn.textContent = icon);
+  },
+
+  toggle() {
+    this.set(this.get() === 'dark' ? 'light' : 'dark');
+  },
+
+  init() {
+    this.set(this.get());
+  },
+};
+
+// ===========================
 // STATE
 // ===========================
 
@@ -281,8 +308,11 @@ function resetDashboard() {
 // ===========================
 
 document.addEventListener('DOMContentLoaded', async () => {
+  Theme.init();
+
   document.getElementById('setup-form').addEventListener('submit', startDashboard);
   document.getElementById('reset-btn').addEventListener('click', resetDashboard);
+  document.querySelectorAll('.btn-theme').forEach(btn => btn.addEventListener('click', () => Theme.toggle()));
 
   document.getElementById('currency-select').addEventListener('change', (e) => {
     state.currency = e.target.value;

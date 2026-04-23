@@ -17,7 +17,10 @@
     <section id="setup-screen" class="screen active">
       <div class="setup-inner">
         <header class="setup-header">
-          <div class="logo">QUIT<span>CLOCK</span></div>
+          <div class="logo-row">
+            <div class="logo">QUIT<span>CLOCK</span></div>
+            <button id="theme-btn-setup" class="btn-theme" title="테마 전환">🌙</button>
+          </div>
           <p class="tagline">지금 이 순간 얼마 벌었어?</p>
         </header>
 
@@ -56,7 +59,10 @@
 
         <header class="dash-header">
           <div class="logo small">QUIT<span>CLOCK</span></div>
-          <button id="reset-btn" class="btn-reset">다시 입력</button>
+          <div class="header-actions">
+            <button id="theme-btn" class="btn-theme" title="테마 전환">🌙</button>
+            <button id="reset-btn" class="btn-reset">다시 입력</button>
+          </div>
         </header>
 
         <!-- EARNED -->
