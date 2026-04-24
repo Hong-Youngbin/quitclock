@@ -103,8 +103,9 @@ const Calc = {
   },
 
   convertKRW(amountKRW, targetCurrency, rates) {
-    if (!rates || !rates[targetCurrency] || !rates['KRW']) return null;
-    return (amountKRW / rates['KRW']) * rates[targetCurrency];
+    if (!rates || !rates[targetCurrency]) return null;
+    // exchangerate-api KRW 기준: 1 KRW = rates[targetCurrency] 외화
+    return amountKRW * rates[targetCurrency];
   },
 };
 
@@ -137,12 +138,16 @@ const CURRENCY_SYMBOLS = {
 };
 
 const Currency = {
+  API_KEY: '35db5c8159e93f83895a1004',
+
   async fetchRates() {
     try {
-      const res = await fetch('https://api.frankfurter.app/latest?from=EUR');
+      const res = await fetch(`https://v6.exchangerate-api.com/v6/${this.API_KEY}/latest/KRW`);
       if (!res.ok) throw new Error('오류');
       const data = await res.json();
-      return { rates: data.rates, date: data.date };
+      if (data.result !== 'success') throw new Error('실패');
+      // rates는 KRW 기준 상대값 → 1 KRW = x 외화
+      return { rates: data.conversion_rates, date: data.time_last_update_utc.slice(0, 16) };
     } catch (e) {
       console.warn('환율 불러오기 실패:', e);
       return null;
