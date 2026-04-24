@@ -558,6 +558,192 @@ input[type="number"]::-webkit-inner-spin-button {
   font-variant-numeric: tabular-nums;
 }
 
+
+/* ===========================
+   TABS
+   =========================== */
+
+.tab-bar {
+  display: flex;
+  gap: 6px;
+  border-bottom: 0.5px solid var(--border);
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.6rem 1rem 0.75rem;
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition);
+  margin-bottom: -0.5px;
+}
+
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.tab-content { display: none; flex-direction: column; gap: 1.25rem; }
+.tab-content.active { display: flex; }
+
+/* ===========================
+   DEDUCTION CALCULATOR
+   =========================== */
+
+.deduct-input-block {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+.salary-reading {
+  margin-top: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent);
+  min-height: 1.2rem;
+}
+
+.deduct-summary {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.deduct-sum-item {
+  flex: 1;
+  min-width: 100px;
+  text-align: center;
+}
+
+.deduct-sum-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.4rem;
+}
+
+.deduct-sum-value {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.deduct-sum-item.accent .deduct-sum-value { color: var(--accent); }
+.deduct-sum-item.red .deduct-sum-value { color: #ff6b6b; }
+
+.deduct-sum-arrow {
+  font-size: 1.2rem;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.deduct-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.deduct-item {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.deduct-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition);
+}
+
+.deduct-item-header:hover { background: var(--surface2); }
+
+.deduct-item-left { display: flex; align-items: center; gap: 0.75rem; }
+
+.deduct-item-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.deduct-item-rate {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.deduct-item-right { display: flex; align-items: center; gap: 0.75rem; }
+
+.deduct-item-amount {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ff6b6b;
+}
+
+.deduct-item-chevron {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  transition: transform var(--transition);
+}
+
+.deduct-item.open .deduct-item-chevron { transform: rotate(180deg); }
+
+.deduct-item-body {
+  display: none;
+  padding: 0 1.25rem 1.25rem;
+  border-top: 0.5px solid var(--border);
+}
+
+.deduct-item.open .deduct-item-body { display: block; }
+
+.deduct-item-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-top: 0.75rem;
+}
+
+.deduct-item-detail {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.deduct-detail-chip {
+  background: var(--surface2);
+  border: 0.5px solid var(--border2);
+  border-radius: 6px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.deduct-detail-chip span { color: var(--accent); font-weight: 700; }
+
 /* ===========================
    RESPONSIVE
    =========================== */
@@ -594,4 +780,11 @@ input[type="number"]::-webkit-inner-spin-button {
   .form-row {
     flex-direction: column;
   }
+
+  .deduct-summary {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .deduct-sum-arrow { display: none; }
 }

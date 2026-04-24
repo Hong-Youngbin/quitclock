@@ -30,8 +30,181 @@ const Theme = {
 };
 
 // ===========================
-// STATE
+// NUMBER FORMAT UTILS
 // ===========================
+
+function formatKRW(n) {
+  return '₩' + Math.round(n).toLocaleString('ko-KR');
+}
+
+function readKorean(n) {
+  if (!n || n <= 0) return '';
+  const uk = Math.floor(n / 100000000);
+  const man = Math.floor((n % 100000000) / 10000);
+  const rest = Math.round(n % 10000);
+  let parts = [];
+  if (uk > 0) parts.push(`${uk}억`);
+  if (man > 0) parts.push(`${man}만`);
+  if (rest > 0 && uk === 0) parts.push(`${rest.toLocaleString()}원`);
+  else if (parts.length > 0) parts[parts.length - 1] += '원';
+  return parts.join(' ') || `${n}원`;
+}
+
+// ===========================
+// DEDUCTION CALC MODULE
+// ===========================
+
+// 2024년 국세청 간이세액표 근사 (월급여 구간, 부양가족 1~11인)
+// [급여구간상한, [부양1, 부양2, ..., 부양11]]
+const INCOME_TAX_TABLE = [
+  [1060000,  [0,0,0,0,0,0,0,0,0,0,0]],
+  [1500000,  [19520,0,0,0,0,0,0,0,0,0,0]],
+  [1800000,  [35390,0,0,0,0,0,0,0,0,0,0]],
+  [2100000,  [62600,14130,0,0,0,0,0,0,0,0,0]],
+  [2400000,  [99620,50780,2480,0,0,0,0,0,0,0,0]],
+  [2700000,  [143780,95350,47450,0,0,0,0,0,0,0,0]],
+  [3000000,  [195720,147290,99390,51490,3590,0,0,0,0,0,0]],
+  [3500000,  [280390,231960,184060,136160,88260,40360,0,0,0,0,0]],
+  [4000000,  [386960,338530,290300,242400,194500,146600,98700,50800,2900,0,0]],
+  [4500000,  [494630,446200,397970,350070,302170,254270,206370,158470,110570,62670,14770]],
+  [5000000,  [616400,567970,519740,471840,423940,376040,328140,280240,232340,184440,136540]],
+  [5500000,  [760800,712370,664140,616240,568340,520440,472540,424640,376740,328840,280940]],
+  [6000000,  [926700,878270,830040,782140,734240,686340,638440,590540,542640,494740,446840]],
+  [7000000,  [1250100,1201670,1153440,1105540,1057640,1009740,961840,913940,866040,818140,770240]],
+  [8000000,  [1616400,1567970,1519740,1471840,1423940,1376040,1328140,1280240,1232340,1184440,1136540]],
+  [9000000,  [2047400,1998970,1950740,1902840,1854940,1807040,1759140,1711240,1663340,1615440,1567540]],
+  [10000000, [2530100,2481670,2433440,2385540,2337640,2289740,2241840,2193940,2146040,2098140,2050240]],
+  [Infinity, [3013300,2964870,2916640,2868740,2820840,2772940,2725040,2677140,2629240,2581340,2533440]],
+];
+
+function getIncomeTax(monthly, dependents, children) {
+  const dep = Math.min(Math.max(dependents, 1), 11);
+  for (const [limit, taxes] of INCOME_TAX_TABLE) {
+    if (monthly <= limit) {
+      let tax = taxes[dep - 1] || 0;
+      // 8세~20세 자녀 세액공제: 첫째 12,500, 둘째 12,500, 셋째+ 25,000
+      if (children >= 1) tax -= 12500;
+      if (children >= 2) tax -= 12500;
+      if (children >= 3) tax -= 25000 * (children - 2);
+      return Math.max(0, Math.round(tax));
+    }
+  }
+  return 0;
+}
+
+const DeductCalc = {
+  compute(gross, dependents, children) {
+    const pension       = Math.round(gross * 0.045);           // 국민연금 4.5%
+    const health        = Math.round(gross * 0.03545);         // 건강보험 3.545%
+    const ltc           = Math.round(health * 0.1295);         // 장기요양 12.95% of 건보
+    const employment    = Math.round(gross * 0.009);           // 고용보험 0.9%
+    const incomeTax     = getIncomeTax(gross, dependents, children);
+    const localTax      = Math.round(incomeTax * 0.1);         // 지방소득세 10%
+
+    const totalDeduct = pension + health + ltc + employment + incomeTax + localTax;
+    const net = gross - totalDeduct;
+
+    return { pension, health, ltc, employment, incomeTax, localTax, totalDeduct, net };
+  },
+};
+
+const DEDUCT_INFO = [
+  {
+    key: 'pension',
+    name: '국민연금',
+    rateStr: '4.5%',
+    desc: '만 60세 이후 매달 연금으로 돌려받는 노후 보험. 회사도 똑같이 4.5%를 부담해서 총 9%가 납부됨. 10년 이상 납부해야 수령 자격 생김.',
+    myRate: '4.5%',
+    companyRate: '4.5%',
+  },
+  {
+    key: 'health',
+    name: '건강보험',
+    rateStr: '3.545%',
+    desc: '병원 갈 때 본인부담금을 낮춰주는 보험. 직장가입자는 급여의 7.09% 중 절반(3.545%)을 본인이 내고 회사가 나머지 절반을 냄.',
+    myRate: '3.545%',
+    companyRate: '3.545%',
+  },
+  {
+    key: 'ltc',
+    name: '장기요양보험',
+    rateStr: '건보료 × 12.95%',
+    desc: '노인·장애인 등 장기요양이 필요한 사람을 위한 보험. 건강보험료에 요율을 곱해서 계산. 건강보험과 함께 고지서가 나옴.',
+    myRate: '건보료 × 12.95%',
+    companyRate: '건보료 × 12.95%',
+  },
+  {
+    key: 'employment',
+    name: '고용보험',
+    rateStr: '0.9%',
+    desc: '실직했을 때 실업급여를 받을 수 있게 해주는 보험. 본인은 0.9%, 회사는 1.15%+@(규모에 따라 추가). 육아휴직급여도 여기서 나옴.',
+    myRate: '0.9%',
+    companyRate: '1.15%~',
+  },
+  {
+    key: 'incomeTax',
+    name: '소득세',
+    rateStr: '간이세액표 기준',
+    desc: '국가에 내는 세금. 월급여와 부양가족 수에 따라 국세청 간이세액표로 계산. 연말정산에서 실제 납부세액과 비교해 환급 또는 추징됨.',
+    myRate: '간이세액표',
+    companyRate: '—',
+  },
+  {
+    key: 'localTax',
+    name: '지방소득세',
+    rateStr: '소득세 × 10%',
+    desc: '소득세의 10%를 지방자치단체에 납부하는 세금. 국세청이 아닌 시/군/구청에 귀속됨. 소득세와 함께 원천징수됨.',
+    myRate: '소득세 × 10%',
+    companyRate: '—',
+  },
+];
+
+const DeductUI = {
+  render(gross, result) {
+    document.getElementById('ds-gross').textContent = formatKRW(gross);
+    document.getElementById('ds-net').textContent = formatKRW(result.net);
+    document.getElementById('ds-total-deduct').textContent = '-' + formatKRW(result.totalDeduct);
+    document.getElementById('deduct-result-block').style.display = 'block';
+
+    const container = document.getElementById('deduct-items');
+    container.innerHTML = '';
+
+    DEDUCT_INFO.forEach(info => {
+      const amount = result[info.key];
+      const item = document.createElement('div');
+      item.className = 'deduct-item';
+      item.innerHTML = `
+        <div class="deduct-item-header">
+          <div class="deduct-item-left">
+            <div class="deduct-item-name">${info.name}</div>
+            <div class="deduct-item-rate">${info.rateStr}</div>
+          </div>
+          <div class="deduct-item-right">
+            <div class="deduct-item-amount">-${formatKRW(amount)}</div>
+            <div class="deduct-item-chevron">▼</div>
+          </div>
+        </div>
+        <div class="deduct-item-body">
+          <div class="deduct-item-desc">${info.desc}</div>
+          <div class="deduct-item-detail">
+            <div class="deduct-detail-chip">내 부담 <span>${info.myRate}</span></div>
+            <div class="deduct-detail-chip">회사 부담 <span>${info.companyRate}</span></div>
+          </div>
+        </div>
+      `;
+      item.querySelector('.deduct-item-header').addEventListener('click', () => {
+        item.classList.toggle('open');
+      });
+      container.appendChild(item);
+    });
+  },
+};
+
+// ===========================
+// NUMBER FORMAT UTILS — end
+// ===========================
+
+
 
 const state = {
   ticker: null,
@@ -321,13 +494,72 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('reset-btn').addEventListener('click', resetDashboard);
   document.querySelectorAll('.btn-theme').forEach(btn => btn.addEventListener('click', () => Theme.toggle()));
 
-  document.getElementById('currency-select').addEventListener('change', (e) => {
-    state.currency = e.target.value;
-    const saved = Storage.load() || {};
-    Storage.save({ ...saved, currency: state.currency });
+  // 탭 전환
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
   });
 
-  // 환율 불러오기
+  // 급여 입력 — 쉼표 포맷 + 한글 읽기
+  const deductSalaryInput = document.getElementById('deduct-salary');
+  const salaryReading = document.getElementById('salary-reading');
+
+  function updateDeductCalc() {
+    const raw = deductSalaryInput.value.replace(/,/g, '');
+    const num = parseInt(raw, 10);
+
+    // 쉼표 포맷
+    if (raw && !isNaN(num)) {
+      deductSalaryInput.value = num.toLocaleString('ko-KR');
+      salaryReading.textContent = readKorean(num);
+    } else {
+      salaryReading.textContent = '';
+    }
+
+    const dependents = parseInt(document.getElementById('deduct-dependents').value, 10) || 1;
+    const children = parseInt(document.getElementById('deduct-children').value, 10) || 0;
+
+    if (num > 0) {
+      const result = DeductCalc.compute(num, dependents, children);
+      DeductUI.render(num, result);
+    } else {
+      document.getElementById('deduct-result-block').style.display = 'none';
+    }
+  }
+
+  deductSalaryInput.addEventListener('input', (e) => {
+    // 커서 위치 보정
+    const raw = e.target.value.replace(/,/g, '');
+    if (!/^\d*$/.test(raw)) {
+      e.target.value = e.target.value.replace(/[^\d,]/g, '');
+    }
+    updateDeductCalc();
+  });
+
+  document.getElementById('deduct-dependents').addEventListener('input', updateDeductCalc);
+  document.getElementById('deduct-children').addEventListener('input', updateDeductCalc);
+
+  // 기존 월급값 자동 채우기
+  const saved = Storage.load();
+  if (saved && saved.salary) {
+    const n = parseInt(saved.salary, 10);
+    if (n > 0) {
+      deductSalaryInput.value = n.toLocaleString('ko-KR');
+      salaryReading.textContent = readKorean(n);
+    }
+  }
+
+  // 환율
+  document.getElementById('currency-select').addEventListener('change', (e) => {
+    state.currency = e.target.value;
+    const s = Storage.load() || {};
+    Storage.save({ ...s, currency: state.currency });
+  });
+
   const rateData = await Currency.fetchRates();
   if (rateData) {
     state.rates = rateData.rates;
@@ -340,7 +572,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // 저장된 설정 복원
-  const saved = Storage.load();
   if (saved) {
     UI.fillSetupForm(saved);
     if (saved.currency) state.currency = saved.currency;

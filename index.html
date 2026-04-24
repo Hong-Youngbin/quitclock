@@ -65,7 +65,14 @@
           </div>
         </header>
 
-        <!-- EARNED -->
+        <!-- TABS -->
+        <div class="tab-bar">
+          <button class="tab-btn active" data-tab="clock">⏱ 급여 시계</button>
+          <button class="tab-btn" data-tab="deduct">💸 난 얼마나 뜯기고 있을까</button>
+        </div>
+
+        <!-- TAB: CLOCK -->
+        <div class="tab-content active" id="tab-clock">
         <div class="earned-block">
           <div class="earned-label">지금 이 순간 벌어들인 금액</div>
           <div class="earned-amount" id="earned-amount">₩0</div>
@@ -131,6 +138,55 @@
 
         <!-- COMMENT -->
         <div class="comment-block" id="comment-block">...</div>
+
+        </div><!-- /tab-clock -->
+
+        <!-- TAB: DEDUCTION CALCULATOR -->
+        <div class="tab-content" id="tab-deduct">
+
+          <div class="deduct-input-block">
+            <div class="form-group">
+              <label for="deduct-salary">월 세전 급여 (원)</label>
+              <input type="text" id="deduct-salary" placeholder="3,000,000" autocomplete="off" />
+              <div class="salary-reading" id="salary-reading"></div>
+            </div>
+            <div class="form-row" style="margin-top:1rem;">
+              <div class="form-group">
+                <label for="deduct-dependents">부양가족 수 (본인 포함)</label>
+                <input type="number" id="deduct-dependents" value="1" min="1" max="11" />
+              </div>
+              <div class="form-group">
+                <label for="deduct-children">20세 이하 자녀 수</label>
+                <input type="number" id="deduct-children" value="0" min="0" max="10" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 결과 -->
+          <div class="deduct-result-block" id="deduct-result-block" style="display:none;">
+
+            <div class="deduct-summary">
+              <div class="deduct-sum-item">
+                <div class="deduct-sum-label">세전 월급</div>
+                <div class="deduct-sum-value" id="ds-gross">—</div>
+              </div>
+              <div class="deduct-sum-arrow">→</div>
+              <div class="deduct-sum-item accent">
+                <div class="deduct-sum-label">실수령액</div>
+                <div class="deduct-sum-value" id="ds-net">—</div>
+              </div>
+              <div class="deduct-sum-item red">
+                <div class="deduct-sum-label">총 공제액</div>
+                <div class="deduct-sum-value" id="ds-total-deduct">—</div>
+              </div>
+            </div>
+
+            <!-- 공제 항목들 -->
+            <div class="deduct-items" id="deduct-items"></div>
+
+          </div>
+
+        </div><!-- /tab-deduct -->
 
       </div>
     </section>
