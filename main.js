@@ -94,12 +94,18 @@ function getIncomeTax(monthly, dependents, children) {
 
 const DeductCalc = {
   compute(gross, dependents, children) {
-    const pension       = Math.round(gross * 0.045);           // 국민연금 4.5%
-    const health        = Math.round(gross * 0.03545);         // 건강보험 3.545%
-    const ltc           = Math.round(health * 0.1295);         // 장기요양 12.95% of 건보
-    const employment    = Math.round(gross * 0.009);           // 고용보험 0.9%
+    // 2026년 기준 요율
+    // 국민연금: 9.5% 중 근로자 4.75% (상한 6,370,000원)
+    const pensionBase = Math.min(gross, 6370000);
+    const pension       = Math.round(pensionBase * 0.0475);
+    // 건강보험: 7.19% 중 근로자 3.595% (원 단위 절사)
+    const health        = Math.floor(gross * 0.03595);
+    // 장기요양보험: 건보료 × (0.9448% / 7.19%) = 건보료 × 13.14% (원 단위 절사)
+    const ltc           = Math.floor(health * 0.1314);
+    // 고용보험: 0.9%
+    const employment    = Math.round(gross * 0.009);
     const incomeTax     = getIncomeTax(gross, dependents, children);
-    const localTax      = Math.round(incomeTax * 0.1);         // 지방소득세 10%
+    const localTax      = Math.round(incomeTax * 0.1);
 
     const totalDeduct = pension + health + ltc + employment + incomeTax + localTax;
     const net = gross - totalDeduct;
@@ -112,32 +118,32 @@ const DEDUCT_INFO = [
   {
     key: 'pension',
     name: '국민연금',
-    rateStr: '4.5%',
-    desc: '만 60세 이후 매달 연금으로 돌려받는 노후 보험. 회사도 똑같이 4.5%를 부담해서 총 9%가 납부됨. 10년 이상 납부해야 수령 자격 생김.',
-    myRate: '4.5%',
-    companyRate: '4.5%',
+    rateStr: '4.75%',
+    desc: '만 60세 이후 매달 연금으로 돌려받는 노후 보험. 2026년부터 총 요율이 9% → 9.5%로 인상되어 근로자·사업주 각각 4.75% 부담. 상한액 월 637만원 적용.',
+    myRate: '4.75%',
+    companyRate: '4.75%',
   },
   {
     key: 'health',
     name: '건강보험',
-    rateStr: '3.545%',
-    desc: '병원 갈 때 본인부담금을 낮춰주는 보험. 직장가입자는 급여의 7.09% 중 절반(3.545%)을 본인이 내고 회사가 나머지 절반을 냄.',
-    myRate: '3.545%',
-    companyRate: '3.545%',
+    rateStr: '3.595%',
+    desc: '병원 갈 때 본인부담금을 낮춰주는 보험. 2026년 총 요율 7.09% → 7.19%로 인상. 근로자·사업주 각각 3.595% 부담. 원 단위 절사.',
+    myRate: '3.595%',
+    companyRate: '3.595%',
   },
   {
     key: 'ltc',
     name: '장기요양보험',
-    rateStr: '건보료 × 12.95%',
-    desc: '노인·장애인 등 장기요양이 필요한 사람을 위한 보험. 건강보험료에 요율을 곱해서 계산. 건강보험과 함께 고지서가 나옴.',
-    myRate: '건보료 × 12.95%',
-    companyRate: '건보료 × 12.95%',
+    rateStr: '건보료 × 13.14%',
+    desc: '노인·장애인 등 장기요양이 필요한 사람을 위한 보험. 2026년 12.95% → 13.14%로 인상. 건강보험료에 요율을 곱해서 계산. 원 단위 절사.',
+    myRate: '건보료 × 13.14%',
+    companyRate: '건보료 × 13.14%',
   },
   {
     key: 'employment',
     name: '고용보험',
     rateStr: '0.9%',
-    desc: '실직했을 때 실업급여를 받을 수 있게 해주는 보험. 본인은 0.9%, 회사는 1.15%+@(규모에 따라 추가). 육아휴직급여도 여기서 나옴.',
+    desc: '실직했을 때 실업급여를 받을 수 있게 해주는 보험. 2026년 동결. 본인 0.9%, 회사 1.15%+α(규모에 따라 추가). 육아휴직급여도 여기서 나옴.',
     myRate: '0.9%',
     companyRate: '1.15%~',
   },

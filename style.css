@@ -605,6 +605,14 @@ input[type="number"]::-webkit-inner-spin-button {
   padding: 1.5rem;
 }
 
+#deduct-salary {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 .salary-reading {
   margin-top: 0.4rem;
   font-family: var(--font-mono);
@@ -622,12 +630,15 @@ input[type="number"]::-webkit-inner-spin-button {
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
+  overflow: hidden;
 }
 
 .deduct-sum-item {
   flex: 1;
   min-width: 100px;
+  max-width: 100%;
   text-align: center;
+  overflow: hidden;
 }
 
 .deduct-sum-label {
@@ -640,10 +651,11 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .deduct-sum-value {
   font-family: var(--font-mono);
-  font-size: 1.4rem;
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
   font-weight: 700;
   color: var(--text);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .deduct-sum-item.accent .deduct-sum-value { color: var(--accent); }
