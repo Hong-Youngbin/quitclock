@@ -215,7 +215,7 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .dashboard-inner {
   width: 100%;
-  max-width: 780px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 1rem 0 3rem;
   display: flex;
@@ -397,23 +397,22 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .retire-grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr 1.1fr 1.1fr;
-  gap: 10px;
+  grid-template-columns: 1.4fr 0.8fr 0.9fr 1.1fr 1.3fr;
+  gap: 8px;
 }
 
 .retire-card {
   background: var(--surface2);
   border: 0.5px solid var(--border);
   border-radius: var(--radius);
-  padding: 1rem 0.75rem;
+  padding: 0.85rem 0.5rem;
   text-align: center;
   min-width: 0;
-  container-type: inline-size;
+  overflow: hidden;
 }
 
 .retire-card.big {
   grid-column: span 1;
-  padding: 1rem 0.75rem;
 }
 
 .retire-card.accent {
@@ -427,7 +426,7 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .rc-value {
   font-family: var(--font-mono);
-  font-size: 14cqi;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--text);
   font-variant-numeric: tabular-nums;
@@ -435,7 +434,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .retire-card.big .rc-value {
-  font-size: 10cqi;
+  font-size: 0.95rem;
 }
 
 .rc-unit {
