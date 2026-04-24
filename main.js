@@ -413,7 +413,14 @@ const UI = {
     if (saved.birth) document.getElementById('birth').value = saved.birth;
     if (saved.join) document.getElementById('join').value = saved.join;
     if (saved.startTime) document.getElementById('start-time').value = saved.startTime;
-    if (saved.salary) document.getElementById('salary').value = saved.salary;
+    if (saved.salary) {
+      const n = parseInt(String(saved.salary).replace(/,/g, ''), 10);
+      if (!isNaN(n)) {
+        document.getElementById('salary').value = n.toLocaleString('ko-KR');
+        const reading = document.getElementById('setup-salary-reading');
+        if (reading) reading.textContent = readKorean(n);
+      }
+    }
   },
 };
 
@@ -445,7 +452,7 @@ function startDashboard(e) {
   const birth = document.getElementById('birth').value;
   const join = document.getElementById('join').value;
   const startTime = document.getElementById('start-time').value;
-  const salary = parseFloat(document.getElementById('salary').value);
+  const salary = parseFloat(document.getElementById('salary').value.replace(/,/g, ''));
 
   if (!birth || !join || !startTime || !salary || salary <= 0) {
     alert('모든 항목을 입력해줘');
@@ -493,6 +500,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('setup-form').addEventListener('submit', startDashboard);
   document.getElementById('reset-btn').addEventListener('click', resetDashboard);
   document.querySelectorAll('.btn-theme').forEach(btn => btn.addEventListener('click', () => Theme.toggle()));
+
+  // setup salary 포맷 + 한글 읽기
+  const setupSalaryInput = document.getElementById('salary');
+  const setupSalaryReading = document.getElementById('setup-salary-reading');
+
+  setupSalaryInput.addEventListener('input', () => {
+    const raw = setupSalaryInput.value.replace(/,/g, '');
+    if (!/^\d*$/.test(raw)) {
+      setupSalaryInput.value = setupSalaryInput.value.replace(/[^\d,]/g, '');
+      return;
+    }
+    const num = parseInt(raw, 10);
+    if (raw && !isNaN(num)) {
+      setupSalaryInput.value = num.toLocaleString('ko-KR');
+      setupSalaryReading.textContent = readKorean(num);
+    } else {
+      setupSalaryReading.textContent = '';
+    }
+  });
 
   // 탭 전환
   document.querySelectorAll('.tab-btn').forEach(btn => {
