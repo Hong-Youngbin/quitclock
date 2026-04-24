@@ -295,7 +295,7 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .earned-amount {
   font-family: var(--font-mono);
-  font-size: 3rem;
+  font-size: 4rem;
   font-weight: 700;
   color: var(--accent);
   letter-spacing: -0.02em;
@@ -307,8 +307,8 @@ input[type="number"]::-webkit-inner-spin-button {
 .earned-sub {
   margin-top: 0.5rem;
   font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: var(--text-dim);
+  font-size: 0.9rem;
+  color: var(--text-muted);
 }
 
 /* PROGRESS BLOCK */
@@ -335,7 +335,7 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .prog-pct {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--accent);
 }
@@ -397,7 +397,7 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .retire-grid {
   display: grid;
-  grid-template-columns: 2fr 2fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
   gap: 10px;
 }
 
@@ -407,6 +407,7 @@ input[type="number"]::-webkit-inner-spin-button {
   border-radius: var(--radius);
   padding: 1rem 0.75rem;
   text-align: center;
+  min-width: 0;
 }
 
 .retire-card.big {
@@ -425,15 +426,20 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .rc-value {
   font-family: var(--font-mono);
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--text);
   font-variant-numeric: tabular-nums;
-  word-break: break-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .retire-card.big .rc-value {
-  font-size: 1.6rem;
+  font-size: 1.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .rc-unit {
@@ -490,7 +496,7 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .currency-result {
   font-family: var(--font-mono);
-  font-size: 2rem;
+  font-size: 2.8rem;
   font-weight: 700;
   color: var(--text);
   font-variant-numeric: tabular-nums;

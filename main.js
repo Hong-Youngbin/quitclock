@@ -94,8 +94,10 @@ const Calc = {
     const now = new Date();
     let years = retireDate.getFullYear() - now.getFullYear();
     let months = retireDate.getMonth() - now.getMonth();
+    let days = retireDate.getDate() - now.getDate();
+    if (days < 0) { months--; days += 30; }
     if (months < 0) { years--; months += 12; }
-    return { years, months, totalDays, totalHours, totalMins, totalSec };
+    return { years, months, days, totalDays, totalHours, totalMins, totalSec };
   },
 
   careerProgress(joinDate, retireDate) {
@@ -207,8 +209,8 @@ const UI = {
       ['ret-days','ret-hours','ret-mins','ret-secs'].forEach(id => this.$(id).textContent = '—');
       return;
     }
-    this.$('ret-ym').textContent = `${t.years}년 ${t.months}개월`;
-    this.$('ret-days').textContent = t.totalDays.toLocaleString() + '일';
+    this.$('ret-ym').textContent = `${t.years}년 ${t.months}개월 ${t.days}일`;
+    this.$('ret-days').textContent = t.totalDays.toLocaleString();
     this.$('ret-hours').textContent = t.totalHours.toLocaleString();
     this.$('ret-mins').textContent = t.totalMins.toLocaleString();
     this.$('ret-secs').textContent = t.totalSec.toLocaleString();
